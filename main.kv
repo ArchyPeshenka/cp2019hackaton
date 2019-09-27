@@ -1,0 +1,26 @@
+# *-* coding: utf-8 *-*
+<MainScreen>:
+	name: 'MainScreen'
+	FloatLayout:
+		size: app.width, app.height
+		canvas.before:
+			Color:
+				rgba: 1.0, 1.0, 1.0, 1.0
+			Rectangle:
+				pos: 0, 0
+				size: app.width, app.height
+
+		Image:
+			pos: app.width * 0.25, app.height * 0.6
+			size_hint: 0.5, 0.1
+			source: 'data/img/logo.png'
+			id: 'logoimg'
+
+		Button:
+			text: 'Enable app'
+			id: 'mainbutton'
+			size_hint: 0.5, 0.1
+			pos: app.width * 0.25, app.height * 0.2
+			on_release:
+				app.init_services()
+				app.toggle_button()
