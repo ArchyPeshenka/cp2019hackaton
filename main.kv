@@ -2,16 +2,18 @@
 <MainScreen>:
 	name: 'MainScreen'
 	FloatLayout:
+		color: 0, 0, 0, 0
+		id: 'flt'
 		size: app.width, app.height
 		canvas.before:
 			Color:
-				rgba: 1.0, 1.0, 1.0, 1.0
+				rgba: self.color
 			Rectangle:
 				pos: 0, 0
 				size: app.width, app.height
 
 		Image:
-			pos: app.width * 0.25, app.height * 0.6
+			pos: app.width * 0.25, app.height * 0.9
 			size_hint: 0.5, 0.1
 			source: 'data/img/logo.png'
 			id: 'logoimg'
@@ -19,8 +21,15 @@
 		Button:
 			text: 'Enable app'
 			id: 'mainbutton'
-			size_hint: 0.5, 0.1
-			pos: app.width * 0.25, app.height * 0.2
+			size_hint: 0.5,  2 * app.width / app.height
+			background_color: (0, 0, 0, 0)
+			pos: app.width * 0.25, app.width * 0.25
 			on_release:
-				app.init_services()
+				app.init_services(app.standardserver)
 				app.toggle_button()
+		Image:
+			id: 'btn'
+			src: 'data/img/btn.png'
+			pos: 0, app.width * 0.25
+			size_hint: 1, app.width / app.height
+			source: self.src

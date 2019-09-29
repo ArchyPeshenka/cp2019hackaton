@@ -29,6 +29,12 @@ class GPSTracker():
 			print('GPS Error')
 			self.active = False
 
+	def get_location(self):
+		return self.gps_location
+
+	def get_status(self):
+		return self.gps_status
+
 	def check_active(self):
 		return self.active
 
