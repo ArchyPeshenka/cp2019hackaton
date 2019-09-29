@@ -1,4 +1,3 @@
-# *-* coding: utf-8 *-*
 import kivy
 
 kivy.require('1.10.1')
@@ -16,95 +15,128 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.config import Config
 
-from sensors import Accelerometer, GPSTracker
-from deploy import DataDeploy
-
+from preprocess import DataWorker
+import webbrowser
 class MainScreen(Screen):
 	def __init__(self):
 		super(MainScreen, self).__init__()
-		self.ids["'flt'"].color = (0.71, 0.02, 0.02, 1.0)
+		self.map_button_state = True #True -> Not clicked ; False -> Clicked
+		self.ksettings_button_state = True
+		self.psettings_button_state = True
 
-class RailDefectionDetectorApp(App):
+	def toggle_map_button(self):
+		if self.map_button_state:
+			self.ids["'mapimage'"].image_source = 'img/openmapon.png'
+		else:
+			self.ids["'mapimage'"].image_source = 'img/openmap.png'	
+		self.map_button_state = not self.map_button_state
 
-	def build(self):
-		self.fake = True
-		self.standardserver = 'http://127.0.0.1:80/'
-		self.active = False
-		self.batch_size = 200
-		self.color = {'Off': (0.71, 0.02, 0.02, 1.0), 'On': (0.4, 0.76, 0.1, 1.0)}
-		self.button_on = True
+	def toggle_ksettings_button(self):
+		if self.ksettings_button_state:
+			self.ids["'ksettings'"].image_source = 'img/seton.png'
+		else:
+			self.ids["'ksettings'"].image_source = 'img/setoff.png'	
+		self.ksettings_button_state = not self.ksettings_button_state
 
-		self.set_configs(480, 800, 1)
+	def toggle_k_indicator(self, path):
+		self.ids["'kind'"].i_image_source = path	
+
+	def toggle_psettings_button(self):
+		if self.psettings_button_state:
+			self.ids["'psettings'"].image_source = 'img/seton.png'
+		else:
+			self.ids["'psettings'"].image_source = 'img/setoff.png'	
+		self.psettings_button_state = not self.psettings_button_state
+
+	def toggle_p_indicator(self, path):
+		self.ids["'pind'"].i_image_source = path
+
+
+class ServerInterfaceApp(App):
+	def build(self, ):
 		self.build_interface()
-		self.init_services(server=self.standardserver)
-		self.schedule_dataflow(0.005)
 		self.mainscreen = MainScreen()
+
+		#Settings of our ЭВРИСТИЧЕСКАЯ НА ВСЕ СТО model
+		self.k_value = 1
+		self.p_value = 1
+		self.radius_value = 0.001
+
+		#Settings for ui
+		self.k_modifier = 0
+		self.p_modifier = 0
+		self.k_ui = {0:'img/light.png', 1:'img/normal.png', 2:'img/hard.png'}
+		self.p_ui = {0:'img/light.png', 1:'img/normal.png', 2:'img/hard.png'}
+
+		self.DataWorker = DataWorker()
+		self.DataWorker.load_data()
 		return self.mainscreen
-	
-	def get_fake_data(self):
-		return {'geo': [random.randint(0, 1000) * 0.2, random.randint(0, 1000) * 0.2], 'acc': [random.randint(0, 1000) * 0.2, random.randint(0, 1000) * 0.2, random.randint(0, 1000) * 0.2]}
-	
-	def get_data(self):
-		if self.active:
-			if not self.fake:
-				if self.gps.check_active():
-					self.datadeploy.add_to_buffer(self.gps.get_location()[0], self.acc.get_state())
-				else:
-					# -404 means No Data
-					self.datadeploy.add_to_buffer([-404, -404], self.acc.get_state())
-			else:
-				#Generate fake data (for testing purposes only)
-				self.datadeploy.add_to_buffer(**self.get_fake_data())
-
-	def send_data(self):
-		if self.active:
-			print(self.datadeploy.get_buffer_len())
-			while self.datadeploy.get_buffer_len() >= self.batch_size and self.datadeploy.check_connection():
-				self.datadeploy.post_from_buffer(self.batch_size)
-
-	def schedule_dataflow(self, frequency):
-		Clock.schedule_interval(lambda somefunc_one: self.get_data(), frequency)
-		Clock.schedule_interval(lambda somefunc_two: self.send_data(), frequency)
-
-	def init_services(self, server):
-		self.gps = GPSTracker()
-		self.acc = Accelerometer()
-		self.datadeploy = DataDeploy(server)
-
-	def stop_services(self):
-		if self.gps.check_active():
-			self.gps.deactivate()
-
-	def run_services(self):
-		if self.gps.check_active():
-			self.gps.activate()
-
-	def set_configs(self, width, height, resizable):
-		self.width, self.height, self.resizable = width, height, resizable
-		Config.set("graphics", "width", str(self.width))
-		Config.set("graphics", "height", str(self.height))
-		Config.set("graphics", "resizable", self.resizable)	
 
 	def build_interface(self, kvfile='main.kv'):
 		with open(kvfile, 'r') as f:
 			Builder.load_string(f.read())
 
-	def toggle_button(self):
-		self.active = not self.active
-		if self.button_on:
-			print(self.mainscreen.ids)
-			self.mainscreen.ids["'mainbutton'"].text = 'Stop services'
-			self.mainscreen.ids["'flt'"].color = self.color['On']
-			self.mainscreen.ids["'btn'"].src = 'data/img/btnred.png'
-			self.run_services()
-		else:
-			self.mainscreen.ids["'mainbutton'"].text = 'Run services'
-			self.stop_services()
-			self.mainscreen.ids["'flt'"].color = self.color['Off']
-			self.mainscreen.ids["'btn'"].src = 'data/img/btn.png'
-		self.button_on = not self.button_on
+	def toggle_map_btn(self):
+		self.mainscreen.toggle_map_button()
+		Clock.schedule_once(lambda x: self.mainscreen.toggle_map_button(), 0.04)
 
-		return True	
+	def toggle_ks_btn(self):
+		self.mainscreen.toggle_ksettings_button()
+
+		if self.k_modifier != 2:
+			self.k_modifier += 1
+			self.k_value += 3
+		else: 
+			self.k_modifier = 0
+			self.k_value = 0
+
+		self.toggle_k_indicator(self.k_ui[self.k_modifier])
+		Clock.schedule_once(lambda x: self.mainscreen.toggle_ksettings_button(), 0.04)
+
+	def toggle_k_indicator(self, path):
+		self.mainscreen.toggle_k_indicator(path)
+
+	def toggle_ps_btn(self):
+		self.mainscreen.toggle_psettings_button()
+
+		if self.p_modifier != 2:
+			self.p_modifier += 1
+			self.p_value += 0.6
+		else: 
+			self.p_modifier = 0
+			self.p_value = 0.6
+
+		self.toggle_p_indicator(self.p_ui[self.p_modifier])
+		Clock.schedule_once(lambda x: self.mainscreen.toggle_psettings_button(), 0.04)
+
+	def toggle_p_indicator(self, path):
+		self.mainscreen.toggle_p_indicator(path)
+
+	def get_values(self):
+		if self.mainscreen.ids["'userid'"].text != '' or self.mainscreen.ids["'userid'"].text != 'None':
+			userid = self.mainscreen.ids["'userid'"].text
+		else:
+			userid = False
+
+		if self.mainscreen.ids["'trackid'"].text != '' or self.mainscreen.ids["'trackid'"].text != 'None':
+			trackid = self.mainscreen.ids["'userid'"].text
+		else:
+			trackid = False
+
+		if self.mainscreen.ids["'email'"].text != '' or self.mainscreen.ids["'email'"].text != 'None':
+			email = self.mainscreen.ids["'email'"].text
+		else:
+			email = False
+
+		return userid, trackid, email
+
+	def generate_map_and_open(self):
+		userid, trackid, email = self.get_values()
+		self.DataWorker.load_data()
+		self.DataWorker.prod_get_graph(self.p_value, 'map.html', radius=0.0005, k=self.k_value)
+		webbrowser.open('map.html')
+
+
 
 if __name__ == '__main__':
-	RailDefectionDetectorApp().run()
+	ServerInterfaceApp().run()

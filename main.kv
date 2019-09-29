@@ -1,35 +1,117 @@
 # *-* coding: utf-8 *-*
 <MainScreen>:
 	name: 'MainScreen'
+	size: 1280, 720
 	FloatLayout:
-		color: 0, 0, 0, 0
 		id: 'flt'
-		size: app.width, app.height
+		size: 1280, 720
+		col: 1, 1, 1, 1
 		canvas.before:
 			Color:
-				rgba: self.color
+				rgba: self.col
 			Rectangle:
 				pos: 0, 0
-				size: app.width, app.height
+				size: 1024, 800
 
 		Image:
-			pos: app.width * 0.25, app.height * 0.9
-			size_hint: 0.5, 0.1
-			source: 'data/img/logo.png'
+			pos: 70, 220
+			size_hint: 0.8, 1
+			source: 'img/header.png'
 			id: 'logoimg'
 
-		Button:
-			text: 'Enable app'
-			id: 'mainbutton'
-			size_hint: 0.5,  2 * app.width / app.height
-			background_color: (0, 0, 0, 0)
-			pos: app.width * 0.25, app.width * 0.25
-			on_release:
-				app.init_services(app.standardserver)
-				app.toggle_button()
 		Image:
-			id: 'btn'
-			src: 'data/img/btn.png'
-			pos: 0, app.width * 0.25
-			size_hint: 1, app.width / app.height
-			source: self.src
+			image_source: 'img/openmap.png'
+			id: 'mapimage'
+			pos: 160, 0
+			size_hint: 0.5625, 0.18
+			source: self.image_source
+
+		Button:
+			text: ''
+			id: 'mapbutton'
+			size_hint: 0.5625, 0.18
+			background_color: (0, 0, 0, 0)
+			pos: 160, 0
+			on_release:
+				app.toggle_map_btn()
+				app.generate_map_and_open()
+
+		Image:
+			i_image_source: 'img/light.png'
+			id: 'kind'
+			pos: 16, 0
+			size_hint: 0.075, 1
+			source: self.i_image_source
+
+		Image:
+			image_source: 'img/setoff.png'
+			id: 'ksettings'
+			pos: 16, 0
+			size_hint: 0.075, 0.133
+			source: self.image_source
+
+		Button:
+			text: ''
+			id: 'ksettingsbtn'
+			size_hint: 0.075, 0.133
+			background_color: (0, 0, 0, 0)
+			pos: 16, 0
+			on_release:
+				app.toggle_ks_btn()
+
+		Image:
+			i_image_source: 'img/light.png'
+			id: 'pind'
+			pos: 720 - 16, 0
+			size_hint: 0.075, 1
+			source: self.i_image_source
+
+		Image:
+			image_source: 'img/setoff.png'
+			id: 'psettings'
+			pos: 720 - 16, 0
+			size_hint: 0.075, 0.133
+			source: self.image_source
+
+		Button:
+			text: ''
+			id: 'psettingsbtn'
+			size_hint: 0.075, 0.133
+			background_color: (0, 0, 0, 0)
+			pos: 720 - 16, 0
+			on_release:
+				app.toggle_ps_btn()
+
+		BoxLayout:
+			pos: 185, 220
+			orientation: 'vertical'
+			size_hint: 0.5, 0.2
+			spacing: 10
+
+			TextInput:
+				id: 'userid'
+				hint_text: 'Id of user or None'
+				pos: 0, 0
+
+			TextInput:
+				id: 'trackid'
+				hint_text: 'Id of track or None'
+				pos: 0, 0
+
+			TextInput:
+				id: 'email'
+				hint_text: 'Type here email to send data & map'
+				pos: 0, 0
+
+		Image:
+			id: 'pods'
+			pos: 110, 60
+			size_hint: 0.7, 0.3
+			source: 'img/pods.png'
+
+		Image:
+			id: 'l'
+			pos: 110, 315
+			size_hint: 0.7, 0.3
+			source: 'img/l.png'
+
